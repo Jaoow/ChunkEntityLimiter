@@ -1,0 +1,6 @@
+name: ChunkEntityLimiter
+version: ${project.version}
+main: com.jaoow.entitylimiter.ChunkEntityLimiter
+api-version: 1.17
+authors: [ Jaoow ]
+website: https://jaoow.github.io/
