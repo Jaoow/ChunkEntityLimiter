@@ -1,4 +1,4 @@
-package com.jaoow.entitylimiter;
+package com.jaoow.entitylimiter.model;
 
 import org.bukkit.entity.EntityType;
 

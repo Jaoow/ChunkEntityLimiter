@@ -1,6 +1,7 @@
 package com.jaoow.entitylimiter;
 
 import com.jaoow.entitylimiter.listener.VehiclePrevent;
+import com.jaoow.entitylimiter.model.EntityCategory;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -8,7 +9,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.vehicle.VehicleCreateEvent;
-import org.bukkit.event.vehicle.VehicleMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.*;

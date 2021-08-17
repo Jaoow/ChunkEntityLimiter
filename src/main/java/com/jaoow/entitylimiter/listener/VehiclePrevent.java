@@ -1,7 +1,8 @@
 package com.jaoow.entitylimiter.listener;
 
 import com.jaoow.entitylimiter.ChunkEntityLimiter;
-import com.jaoow.entitylimiter.EntityCategory;
+import com.jaoow.entitylimiter.model.EntityCategory;
+import com.jaoow.entitylimiter.model.VehicleType;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.*;
@@ -44,57 +45,8 @@ public class VehiclePrevent implements Listener {
             vehicle.remove();
             if (plugin.isDropVehicle()) {
                 Location location = vehicle.getLocation();
-                Objects.requireNonNull(location.getWorld()).dropItemNaturally(location, vehicleToItem(vehicle));
+                Objects.requireNonNull(location.getWorld()).dropItemNaturally(location, VehicleType.valueOf(vehicle).getItem());
             }
         }
-    }
-
-
-    private ItemStack vehicleToItem(Vehicle vehicle) {
-        Material material = Material.AIR;
-        switch (vehicle.getType()) {
-            case MINECART:
-                material = Material.MINECART;
-                break;
-            case MINECART_CHEST:
-                material = Material.CHEST_MINECART;
-                break;
-            case MINECART_FURNACE:
-                material = Material.FURNACE_MINECART;
-                break;
-            case MINECART_COMMAND:
-                material = Material.COMMAND_BLOCK_MINECART;
-                break;
-            case MINECART_TNT:
-                material = Material.TNT_MINECART;
-                break;
-            case MINECART_HOPPER:
-                material = Material.HOPPER_MINECART;
-                break;
-            case BOAT:
-                Boat boat = (Boat) vehicle;
-                switch (boat.getWoodType()) {
-                    case GENERIC:
-                        material = Material.OAK_BOAT;
-                        break;
-                    case REDWOOD:
-                        material = Material.SPRUCE_BOAT;
-                        break;
-                    case BIRCH:
-                        material = Material.BIRCH_BOAT;
-                        break;
-                    case JUNGLE:
-                        material = Material.JUNGLE_BOAT;
-                        break;
-                    case ACACIA:
-                        material = Material.ACACIA_BOAT;
-                        break;
-                    case DARK_OAK:
-                        material = Material.DARK_OAK_BOAT;
-                        break;
-                }
-                break;
-        }
-        return new ItemStack(material);
     }
 }
