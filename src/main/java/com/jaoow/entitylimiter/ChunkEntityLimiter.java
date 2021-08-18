@@ -1,7 +1,11 @@
 package com.jaoow.entitylimiter;
 
+import com.google.common.collect.Lists;
 import com.jaoow.entitylimiter.listener.VehiclePrevent;
 import com.jaoow.entitylimiter.model.EntityCategory;
+import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
+import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -10,6 +14,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.vehicle.VehicleCreateEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -17,6 +22,8 @@ import java.util.stream.Collectors;
 public final class ChunkEntityLimiter extends JavaPlugin implements Listener {
 
     private boolean dropVehicle;
+    private int cleanerDelay;
+
     private List<EntityType> whitelistTypes;
     private EnumMap<EntityCategory, Integer> entityLimiter;
 
@@ -26,6 +33,7 @@ public final class ChunkEntityLimiter extends JavaPlugin implements Listener {
         saveDefaultConfig();
 
         this.dropVehicle = this.getConfig().getBoolean("drop-vehicle");
+        this.cleanerDelay = this.getConfig().getInt("cleaner-delay", 30);
 
         this.whitelistTypes = getList("entity-whitelist", new ArrayList<>(), EntityType.class);
         this.entityLimiter = parseValueMap(EntityCategory.class, "entity-limiter", 0);
@@ -35,6 +43,43 @@ public final class ChunkEntityLimiter extends JavaPlugin implements Listener {
 
         // Init vehicle prevent.
         this.getServer().getPluginManager().registerEvents(new VehiclePrevent(this), this);
+
+        // Init Entity Cleaner Task
+        Bukkit.getScheduler().runTaskTimer(this, () -> {
+            for (World world : Bukkit.getWorlds()) {
+                for (Chunk chunk : world.getLoadedChunks()) {
+                    List<EntityType> clearedTypes = new ArrayList<>();
+                    for (Entity entity : Lists.newArrayList(chunk.getEntities())) {
+
+                        EntityType entityType = entity.getType();
+                        EntityCategory entityCategory = EntityCategory.valueOf(entityType);
+
+                        // Ignore if they are whitelisted.
+                        if (whitelistTypes.contains(entityType)) continue;
+
+                        // Ignore if it was cleared before.
+                        if (clearedTypes.contains(entityType)) continue;
+
+                        // Entities amount in chunk.
+                        List<Entity> entities = Arrays.stream(chunk.getEntities())
+                                .filter(ent -> entityCategory.contains(ent.getType())).collect(Collectors.toList());
+
+                        // Entity cap or max value.
+                        int entityCap = entityLimiter.getOrDefault(entityCategory, Integer.MAX_VALUE);
+
+                        // Remove entities if amount is greater than cap.
+                        if (entities.size() > entityCap) {
+                            // Removes all excess entities
+                            entities.subList(entityCap, entities.size()).forEach(Entity::remove);
+
+                            // Add type to list.
+                            clearedTypes.add(entityType);
+                        }
+                    }
+                }
+            }
+
+        }, this.getCleanerDelay() * 20L, this.getCleanerDelay() * 20L);
 
         // Message.
         getLogger().info("Plugin successfully started.");
@@ -85,6 +130,10 @@ public final class ChunkEntityLimiter extends JavaPlugin implements Listener {
 
     public boolean isDropVehicle() {
         return dropVehicle;
+    }
+
+    public int getCleanerDelay() {
+        return cleanerDelay;
     }
 
     public List<EntityType> getWhitelistTypes() {
